@@ -1,0 +1,277 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Apr 16 23:46:43 2021
+
+@author: Juhi
+"""
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import random
+import re
+
+# %matplotlib inline
+
+# Import Scikit-learn helper functions
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
+
+# Import Scikit-learn models
+from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import MultinomialNB
+
+# Import Scikit-learn metric functions
+from sklearn.metrics import confusion_matrix, classification_report
+import seaborn as sns
+
+
+
+print("\n### Libraries Imported ###\n")
+
+data_dir =r"C:\Users\Juhi\Documents\BE project\MaliciousURLsdataset.csv"
+# Load the training data
+print("- Loading CSV Data -")
+url_df = pd.read_csv(data_dir)
+url_df = pd.DataFrame(url_df)
+url_df = url_df.sample(n=10000)
+
+test_url = "https://www.scribd.com/document/22302487/Electricity-From-Walking is"
+
+print("\n### CSV Data Loaded ###\n")
+
+test_percentage = .2
+
+train_df, test_df = train_test_split(url_df, test_size=test_percentage, random_state=42)
+
+labels = train_df['label']
+test_labels = test_df['label']
+
+print("\n### Split Complete ###\n")
+# Print counts of each class
+print("- Counting Splits -")
+print("Training Samples:", len(train_df))
+print("Testing Samples:", len(test_df))
+
+# Graph counts of each class, for both training and testing
+count_train_classes = pd.value_counts(train_df['label'])
+count_train_classes.plot(kind='bar', fontsize=16)
+plt.title("Class Count (Training)", fontsize=20)
+plt.xticks(rotation='horizontal')
+plt.xlabel("label", fontsize=20)
+plt.ylabel("Class Count", fontsize=20)
+
+plt.show()
+
+count_test_classes = pd.value_counts(test_df['label'])
+count_test_classes.plot(kind='bar', fontsize=16, colormap='ocean')
+plt.title("Class Count (Testing)", fontsize=20)
+plt.xticks(rotation='horizontal')
+plt.xlabel("label", fontsize=20)
+plt.ylabel("Class Count", fontsize=20)
+
+plt.show()
+
+#Create our tokenizer by splitting URLs into their domains, subdomains, directories, 
+#files, and extensions.
+
+# Define tokenizer
+# The purpose of a tokenizer is to separate the features from the raw data
+
+
+def tokenizer(url):
+  """Separates feature words from the raw data
+  Keyword arguments:
+    url ---- The full URL
+    
+  :Returns -- The tokenized words; returned as a list
+  """
+  
+  # Split by slash (/) and dash (-)
+  tokens = re.split('[/-]', url)
+  
+  for i in tokens:
+    # Include the splits extensions and subdomains
+    if i.find(".") >= 0:
+      dot_split = i.split('.')
+      
+      # Remove .com and www. since they're too common
+      if "com" in dot_split:
+        dot_split.remove("com")
+      if "www" in dot_split:
+        dot_split.remove("www")
+      
+      tokens += dot_split
+      
+  return tokens
+    
+print("\n### Tokenizer defined ###\n")
+# Let's see how our tokenizer changes our URLs
+print("\n- Full URL -\n")
+print(test_url)
+
+# Tokenize test URL
+print("\n- Tokenized Output -\n")
+tokenized_url = tokenizer(test_url)
+print(tokenized_url)
+
+# Vectorizer the training inputs -- Takes about 30 seconds to complete
+#   There are two types of vectors:
+#     1. Count vectorizer
+#     2. Term Frequency-Inverse Document Frequency (TF-IDF)
+
+print("- Training Count Vectorizer -")
+cVec = CountVectorizer(tokenizer=tokenizer)
+count_X = cVec.fit_transform(train_df['url']) #//vectorizing the training data
+
+print("- Training TF-IDF Vectorizer -")
+tVec = TfidfVectorizer(tokenizer=tokenizer)
+tfidf_X = tVec.fit_transform(train_df['url'])#//vectorizing the training data
+
+
+print("\n### Vectorizing Complete ###\n")
+
+#Task 2a (optional) - Count the test URL tokens
+# Manually perform term count on test_url
+for i in list(dict.fromkeys(tokenized_url)):
+  print("{} - {}".format(tokenized_url.count(i), i))
+
+#  Task 2b (optional) - View the test URL vectorizers
+#example_cVec = CountVectorizer(tokenizer=tokenizer)
+#example_X = example_cVec.fit_transform([test_url])
+
+#print("\n- Count Vectorizer (Test URL) -\n")
+#print(example_X)
+
+##print()
+#print("=" * 50)
+print()
+
+example_tVec = TfidfVectorizer(tokenizer=tokenizer)
+example_X = example_tVec.fit_transform([test_url])
+
+print("\n- TFIDF Vectorizer (Test URL) -\n")
+print(example_X)
+
+
+#Task 3 - Vectorize the testing data
+# Vectorize the testing inputs
+# Use 'transform' instead of 'fit_transform' because we've already trained our vectorizers line 123 and 127
+
+print("- Count Vectorizer -")
+test_count_X = cVec.transform(test_df['url'])
+
+print("- TFIDF Vectorizer -")
+test_tfidf_X = tVec.transform([test_url])
+
+
+print("\n###test Data Vectorizing Complete ###\n")
+# Define report generator
+
+def generate_report(cmatrix, score, creport, report_title):
+  """Generates and displays graphical reports
+  Keyword arguments:
+    cmatrix - Confusion matrix generated by the model
+    score --- Score generated by the model
+    creport - Classification Report generated by the model
+    
+  :Returns -- N/A
+  """
+  
+  # Generate confusion matrix heatmap
+  plt.figure(figsize=(5,5))
+  sns.heatmap(cmatrix, 
+              annot=True, 
+              fmt="d", 
+              linewidths=.5, 
+              square = True, 
+              cmap = 'Blues', 
+              annot_kws={"size": 16}, 
+              xticklabels=['bad', 'good'],
+              yticklabels=['bad', 'good'])
+
+  plt.xticks(rotation='horizontal', fontsize=16)
+  plt.yticks(rotation='horizontal', fontsize=16)
+  plt.xlabel('Actual Label', size=20);
+  plt.ylabel('Predicted Label', size=20);
+
+  title = report_title +'\nAccuracy Score: {0:.4f}'.format(score)
+  plt.title(title, size = 20);
+
+  # Display classification report and confusion matrix
+  print(creport)
+  plt.show()
+  print("\n### Report Generator Defined ###\n")
+  
+  #Task 4a - Train and evaluate the MNB-TFIDF model
+ ######## Multinomial Naive Bayesian with TF-IDF ##########
+report_title="MNB-TFIDF model"
+# Train the model
+mnb_tfidf = MultinomialNB()
+mnb_tfidf.fit(tfidf_X, labels)
+
+
+# Test the mode (score, predictions, confusion matrix, classification report)
+score_mnb_tfidf = mnb_tfidf.score(test_tfidf_X, test_labels)
+predictions_mnb_tfidf = mnb_tfidf.predict(test_tfidf_X)
+cmatrix_mnb_tfidf = confusion_matrix(predictions_mnb_tfidf, test_labels)
+creport_mnb_tfidf = classification_report(predictions_mnb_tfidf, test_labels)
+
+print("\n### MNB-TFIDF model Model Built ###\n")
+generate_report(cmatrix_mnb_tfidf, score_mnb_tfidf, creport_mnb_tfidf,report_title)
+
+###### Multinomial Naive Bayesian with Count Vectorizer ##########
+report_title="MNB-Count model"
+# Train the model
+mnb_count = MultinomialNB()
+mnb_count.fit(count_X, labels)
+
+
+# Test the mode (score, predictions, confusion matrix, classification report)
+score_mnb_count = mnb_count.score(test_count_X, test_labels)
+predictions_mnb_count = mnb_count.predict(test_count_X)
+cmatrix_mnb_count = confusion_matrix(predictions_mnb_count, test_labels)
+creport_mnb_count = classification_report(predictions_mnb_count, test_labels)
+
+print("\n### MNB-Count model Model Built ###\n")
+generate_report(cmatrix_mnb_count, score_mnb_count, creport_mnb_count,report_title)
+
+########## Logistic Regression with TF-IDF ###############
+report_title="LGS-TFIDF model"
+# Train the model
+lgs_tfidf = LogisticRegression(solver='lbfgs')
+lgs_tfidf.fit(tfidf_X, labels)
+
+
+# Test the mode (score, predictions, confusion matrix, classification report)
+score_lgs_tfidf = lgs_tfidf.score(test_tfidf_X, test_labels)
+predictions_lgs_tfidf = lgs_tfidf.predict(test_tfidf_X)
+
+print(">>", predictions_lgs_tfidf, len(predictions_lgs_tfidf))
+
+cmatrix_lgs_tfidf = confusion_matrix(predictions_lgs_tfidf, test_labels)
+creport_lgs_tfidf = classification_report(predictions_lgs_tfidf, test_labels)
+
+print("\n### LGS-TFIDF model Model Built ###\n")
+generate_report(cmatrix_lgs_tfidf, score_lgs_tfidf, creport_lgs_tfidf,report_title)
+
+######## Logistic Regression with Count Vectorizer #########
+report_title="LGS-Count model"
+# Train the model
+lgs_count = LogisticRegression(solver='lbfgs')
+lgs_count.fit(count_X, labels)
+
+
+# Test the mode (score, predictions, confusion matrix, classification report)
+score_lgs_count = lgs_count.score(test_count_X, test_labels)
+predictions_lgs_count = lgs_count.predict(test_count_X)
+print(len(predictions_lgs_count))
+cmatrix_lgs_count = confusion_matrix(predictions_lgs_count, test_labels)
+creport_lgs_count = classification_report(predictions_lgs_count, test_labels)
+
+print("\n### LGS-Count model Model Built ###\n")
+generate_report(cmatrix_lgs_count, score_lgs_count, creport_lgs_count,report_title)
+  
+  
+
+

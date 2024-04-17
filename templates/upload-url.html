@@ -1,0 +1,123 @@
+<!DOCTYPE>
+<html>
+    <head>
+        <link rel="stylesheet" type= "text/css" href="static\style.css">
+        <link rel="shortcut icon" href="#">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    </head>
+    <body>
+      <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top" >
+        <div class="container" >
+          <a class="navbar-brand mr-4" href="/" style="color: brown; margin-left: 0px;">
+            
+            <img src="static/upload_icon.jpg" href="/" style="width: 40px;">
+          ExFAURL Scanner
+        </a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <!-- <div class="collapse navbar-collapse" id="navbarToggle">
+            <div class="navbar-nav mr-auto">
+              <a class="nav-item nav-link" href="/file">Enter file</a>
+              <a class="nav-item nav-link" href="/url">Enter URL</a>
+            </div> -->
+            <!-- Navbar Right Side -->
+            <div class="navbar-nav" >
+              <a class="nav-item nav-link" href="/About" style="color: brown;">About Us</a>
+              <a class="nav-item nav-link" href="/documentation" style="color: brown;">Documentation</a>
+            </div>
+          </div>
+        </div>
+      </nav>      
+
+        <div class="bg-img"></div>
+        <div class="upload_box">
+            <img src="static\upload_icon.jpg" class="upload_icon"/>   
+            <h3 style="text-align: center;">Enter a URL to be tested</h3>
+            <form action="url" method="POST" enctype="multipart/form-data">
+                <input type="url" name="url" id="url" multiple onforminput="alert('selected');">
+                <br>
+                <h3 id="filename_h1"></h3>
+                <input type="submit">
+            </form>
+        </div>
+        <footer class="bg-light text-center text-lg-start">
+          <!-- Grid container -->
+          <div class="container p-4">
+            <!--Grid row-->
+            <div class="row">
+              <!--Grid column-->
+              <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                <h5 class="text-uppercase">Scan</h5>
+        
+                <p>
+                  Scanning engine is backed up with relaible 
+                  and it is undergoing harness tests to 
+                  deliver exceptional performance
+                </p>
+              </div>
+              <!--Grid column-->
+        
+              <!--Grid column-->
+              <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+                <h5 class="text-uppercase">Detect</h5>
+        
+                <p>
+                  We are committed to innovation
+                  and consistently enhancing malware
+                  detection capabilities to provide our 
+                  customers with effective tools against 
+                  sophisticated and evolving web threats.
+                </p>
+              </div>
+              <!--Grid column-->
+            </div>
+            <!--Grid row-->
+          </div>
+          <!-- Grid container -->
+        
+          <!-- Copyright -->
+          <!-- <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+            © 2020 Copyright:
+            <a class="text-dark" href="https://mdbootstrap.com/">MDBootstrap.com</a>
+          </div> -->
+          <!-- Copyright -->
+        </footer>
+
+    </body>
+
+    <script>
+        document.getElementById('file').onchange = function() {
+        var path = this.value.toString();
+        var arr = path.split("\\");
+        document.getElementById('filename_h1').innerHTML = arr[arr.length-1];
+    };
+    </script>
+    
+</html>
+
+<!-- <!DOCTYPE>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        
+   </head>
+   
+    <body>
+        <script src="myscripts.js"></script>
+        <h1>Flat UI - Custom Input:file</h1>
+        <h2>With JS return</h2>
+        
+        <form action="/upload_file" method="POST" enctype="multipart/form-data">
+          <div class="input-file-container">  
+            <input class="input-file" id="file" type="file" name="file_name">
+            <label tabindex="0" for="file" class="input-file-trigger">Select a file...</label>
+              <button type="submit">Submit</button>
+          </div>
+          <p class="file-return"></p>
+        </form>
+        
+        <p class="txtcenter">It's just a test, not really usable.<br />Works on IE &gt; 8 and modern browsers</p>
+        <p class="txtcenter copy">by <a href="https://twitter.com/geoffreycrofte">@geoffreycrofte</a><br />see also <a href="https://codepen.io/CreativeJuiz/pen/uEHeD">Custom input:file with CSS only</a></p>
+    </body>
+</html> -->
